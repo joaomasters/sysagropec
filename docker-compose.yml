@@ -1,0 +1,56 @@
+# Execução local completa: docker compose up --build
+# Somente banco e e-mail (para desenvolver com mvnw/npm): docker compose up -d postgres mailpit
+name: sysagropec
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: sysagropec
+      POSTGRES_USER: sysagropec
+      POSTGRES_PASSWORD: ${SYSAGROPEC_DB_SENHA:?defina SYSAGROPEC_DB_SENHA no arquivo .env}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - dados-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sysagropec -d sysagropec"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Caixa de e-mail local para os links de convite e redefinição de senha: http://localhost:8025
+  mailpit:
+    image: axllent/mailpit:v1.31
+    ports:
+      - "127.0.0.1:8025:8025"
+      - "127.0.0.1:1025:1025"
+
+  backend:
+    build: ./backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-}
+      SYSAGROPEC_DB_URL: jdbc:postgresql://postgres:5432/sysagropec
+      SYSAGROPEC_DB_USUARIO: sysagropec
+      SYSAGROPEC_DB_SENHA: ${SYSAGROPEC_DB_SENHA}
+      SYSAGROPEC_SMTP_HOST: mailpit
+      SYSAGROPEC_SMTP_PORTA: 1025
+      SYSAGROPEC_URL_FRONTEND: http://localhost:8081
+      SYSAGROPEC_LOG_FORMATO: ecs
+      SYSAGROPEC_ORGANIZACAO: ${SYSAGROPEC_ORGANIZACAO:-}
+      SYSAGROPEC_ADMIN_NOME: ${SYSAGROPEC_ADMIN_NOME:-Administrador}
+      SYSAGROPEC_ADMIN_EMAIL: ${SYSAGROPEC_ADMIN_EMAIL:-}
+      SYSAGROPEC_ADMIN_SENHA: ${SYSAGROPEC_ADMIN_SENHA:-}
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "127.0.0.1:8081:80"
+
+volumes:
+  dados-postgres:

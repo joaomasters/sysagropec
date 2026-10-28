@@ -1,0 +1,77 @@
+spring:
+  application:
+    name: sysagropec
+  datasource:
+    url: ${SYSAGROPEC_DB_URL:jdbc:postgresql://localhost:5432/sysagropec}
+    username: ${SYSAGROPEC_DB_USUARIO:sysagropec}
+    password: ${SYSAGROPEC_DB_SENHA:}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+  session:
+    timeout: 8h
+    jdbc:
+      initialize-schema: never
+  mail:
+    host: ${SYSAGROPEC_SMTP_HOST:localhost}
+    port: ${SYSAGROPEC_SMTP_PORTA:1025}
+    username: ${SYSAGROPEC_SMTP_USUARIO:}
+    password: ${SYSAGROPEC_SMTP_SENHA:}
+  servlet:
+    multipart:
+      enabled: false
+
+server:
+  port: ${SYSAGROPEC_PORTA:8080}
+  shutdown: graceful
+  servlet:
+    session:
+      timeout: 8h
+      cookie:
+        http-only: true
+        same-site: lax
+        secure: ${SYSAGROPEC_COOKIE_SEGURO:false}
+  error:
+    include-stacktrace: never
+    include-message: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+
+logging:
+  structured:
+    format:
+      console: ${SYSAGROPEC_LOG_FORMATO:}
+  level:
+    root: INFO
+
+springdoc:
+  api-docs:
+    enabled: ${SYSAGROPEC_OPENAPI:true}
+  swagger-ui:
+    enabled: ${SYSAGROPEC_OPENAPI:true}
+
+sysagropec:
+  url-frontend: ${SYSAGROPEC_URL_FRONTEND:http://localhost:5173}
+  email:
+    remetente: ${SYSAGROPEC_EMAIL_REMETENTE:nao-responda@sysagropec.local}
+  inicializacao:
+    organizacao: ${SYSAGROPEC_ORGANIZACAO:}
+    admin-nome: ${SYSAGROPEC_ADMIN_NOME:Administrador}
+    admin-email: ${SYSAGROPEC_ADMIN_EMAIL:}
+    admin-senha: ${SYSAGROPEC_ADMIN_SENHA:}
